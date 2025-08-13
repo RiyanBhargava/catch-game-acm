@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game 2: ACM Logo Puzzle</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: Arial, sans-serif;
+            color: white;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            position: relative;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .puzzle-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .puzzle-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .puzzle-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .puzzle-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 150px);
+            grid-template-rows: repeat(3, 150px);
+            gap: 2px;
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+        }
+
+        .puzzle-tile {
+            background: #fff;
+            border: 3px solid #333;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            transition: all 0.2s ease;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .puzzle-tile:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .puzzle-tile.empty {
+            background: rgba(255,255,255,0.1);
+            border: 2px dashed rgba(255,255,255,0.3);
+            cursor: default;
+        }
+
+        .puzzle-tile.empty:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .tile-number {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .stats {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .completion-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 200;
+            display: none;
+        }
+
+        .completion-message h2 {
+            color: #4CAF50;
+            margin-bottom: 1rem;
+        }
+
+        .answer-reveal {
+            font-size: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .answer-part {
+            color: #4CAF50;
+            font-weight: bold;
+            font-family: monospace;
+        }
+
+        .home-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .home-button:hover {
+            background: #5a67d8;
+        }
+
+        .instructions {
+            text-align: center;
+            max-width: 600px;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="puzzle-header">
+            <h1>🧩 Game 2: ACM Logo Puzzle</h1>
+            <p>Rearrange the tiles to complete the ACM logo!</p>
+            <p style="font-size: 0.9rem; opacity: 0.8;">Use visual recognition to reconstruct the official ACM logo</p>
+        </div>
+
+        <div class="instructions">
+            <p>Click on tiles adjacent to the empty space to move them. Rearrange the pieces to reconstruct the complete ACM logo and reveal the second part of the answer!</p>
+        </div>
+
+        <div class="stats">
+            <span>Moves: <span id="moves">0</span></span>
+        </div>
+
+        <div id="puzzleGrid" class="puzzle-grid">
+            <!-- Tiles will be populated by JavaScript -->
+        </div>
+
+        <div>
+            <a href="/" class="home-button">🏠 Back to Home</a>
+            <button class="home-button" onclick="restartPuzzle()">🔄 Restart Puzzle</button>
+        </div>
+
+        <div id="completionMessage" class="completion-message">
+            <h2>🎉 Puzzle Completed! 🎉</h2>
+            <div class="answer-reveal">
+                <p>Second part of the answer:</p>
+                <p class="answer-part">tHe_GOaT</p>
+                <hr style="margin: 1rem 0; border-color: rgba(255,255,255,0.3);">
+                <p>Complete Answer:</p>
+                <p class="answer-part" style="font-size: 2rem;">aCM_iS_tHe_GOaT</p>
+            </div>
+            <p>Congratulations! You've solved both parts of the ACM challenge!</p>
+            <a href="/" class="home-button">🏠 Back to Home</a>
+            <button class="home-button" onclick="restartPuzzle()">🔄 Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Game configuration from Flask
+        const GAME_CONFIG = {{ config | tojson }};
+        
+        // Game variables
+        let gameSession = null;
+        let puzzleState = [];
+        let emptyPos = 8;
+        let moves = 0;
+        
+        // Get session from URL if coming from catch game
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionFromUrl = urlParams.get('session');
+        
+        // Puzzle initialization
+        async function initPuzzle() {
+            try {
+                // Use existing session if available, otherwise start new
+                gameSession = sessionFromUrl;
+                
+                const response = await fetch('/api/start_puzzle', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: gameSession
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    puzzleState = data.puzzle_state;
+                    emptyPos = data.empty_pos;
+                    moves = 0;
+                    renderPuzzle();
+                    updateStats();
+                } else {
+                    console.error('Failed to start puzzle:', data.error);
+                    // If session invalid, start fresh
+                    startNewPuzzle();
+                }
+                
+            } catch (error) {
+                console.error('Failed to initialize puzzle:', error);
+                startNewPuzzle();
+            }
+        }
+        
+        // Start new puzzle without session
+        function startNewPuzzle() {
+            // Generate local puzzle state
+            puzzleState = Array.from({length: 9}, (_, i) => i);
+            emptyPos = 8;
+            moves = 0;
+            
+            // Shuffle locally
+            for (let i = 0; i < 1000; i++) {
+                const validMoves = getValidMoves();
+                if (validMoves.length > 0) {
+                    const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+                    swapTiles(emptyPos, randomMove);
+                    emptyPos = randomMove;
+                }
+            }
+            
+            moves = 0;
+            renderPuzzle();
+            updateStats();
+        }
+        
+        // Get valid moves for current empty position
+        function getValidMoves() {
+            const row = Math.floor(emptyPos / 3);
+            const col = emptyPos % 3;
+            const validMoves = [];
+            
+            // Check all 4 directions
+            const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+            for (const [dr, dc] of directions) {
+                const newRow = row + dr;
+                const newCol = col + dc;
+                if (newRow >= 0 && newRow < 3 && newCol >= 0 && newCol < 3) {
+                    validMoves.push(newRow * 3 + newCol);
+                }
+            }
+            
+            return validMoves;
+        }
+        
+        // Swap tiles
+        function swapTiles(pos1, pos2) {
+            [puzzleState[pos1], puzzleState[pos2]] = [puzzleState[pos2], puzzleState[pos1]];
+        }
+        
+        // Render puzzle grid
+        function renderPuzzle() {
+            const grid = document.getElementById('puzzleGrid');
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < 9; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'puzzle-tile';
+                tile.dataset.position = i;
+                
+                if (puzzleState[i] === 8) {
+                    // Empty tile
+                    tile.classList.add('empty');
+                } else {
+                    // Regular tile - show piece of ACM logo without numbers
+                    tile.style.backgroundImage = `url('/static/acm.png')`;
+                    
+                    // Calculate which piece of the original image this tile should show
+                    const originalRow = Math.floor(puzzleState[i] / 3);
+                    const originalCol = puzzleState[i] % 3;
+                    
+                    // Each tile is 150px, so the background should be positioned to show the right piece
+                    const bgPosX = -(originalCol * 150);
+                    const bgPosY = -(originalRow * 150);
+                    
+                    tile.style.backgroundPosition = `${bgPosX}px ${bgPosY}px`;
+                    tile.style.backgroundSize = '450px 450px'; // 3x3 grid = 450px total
+                    tile.style.backgroundRepeat = 'no-repeat';
+                    
+                    tile.addEventListener('click', () => moveTile(i));
+                }
+                
+                grid.appendChild(tile);
+            }
+        }
+        
+        // Move tile
+        async function moveTile(position) {
+            // Check if move is valid (adjacent to empty space)
+            const emptyRow = Math.floor(emptyPos / 3);
+            const emptyCol = emptyPos % 3;
+            const tileRow = Math.floor(position / 3);
+            const tileCol = position % 3;
+            
+            if (Math.abs(emptyRow - tileRow) + Math.abs(emptyCol - tileCol) === 1) {
+                if (gameSession) {
+                    // Server-side move
+                    try {
+                        const response = await fetch('/api/move_tile', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                session_id: gameSession,
+                                tile_pos: position
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        if (data.success) {
+                            puzzleState = data.puzzle_state;
+                            emptyPos = data.empty_pos;
+                            moves = data.moves;
+                            
+                            renderPuzzle();
+                            updateStats();
+                            
+                            if (data.solved) {
+                                showCompletion();
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Failed to move tile:', error);
+                    }
+                } else {
+                    // Local move
+                    swapTiles(emptyPos, position);
+                    emptyPos = position;
+                    moves++;
+                    
+                    renderPuzzle();
+                    updateStats();
+                    
+                    // Check if solved
+                    if (puzzleState.every((val, idx) => val === idx)) {
+                        showCompletion();
+                    }
+                }
+            }
+        }
+        
+        // Update stats display
+        function updateStats() {
+            document.getElementById('moves').textContent = moves;
+        }
+        
+        // Show completion message
+        function showCompletion() {
+            document.getElementById('completionMessage').style.display = 'block';
+        }
+        
+        // Restart puzzle
+        function restartPuzzle() {
+            document.getElementById('completionMessage').style.display = 'none';
+            initPuzzle();
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            initPuzzle();
+        });
+    </script>
+</body>
+</html>

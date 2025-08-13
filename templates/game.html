@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game 1: ACM Catch Challenge</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: Arial, sans-serif;
+            color: white;
+            overflow: hidden;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #gameCanvas {
+            border: 2px solid #fff;
+            background: url('/static/background_image.webp') center/cover;
+            cursor: none;
+        }
+
+        .ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+        }
+
+        .score-display {
+            background: rgba(0,0,0,0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            z-index: 200;
+            display: none;
+        }
+
+        .home-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+
+        .home-button:hover {
+            background: #5a67d8;
+        }
+
+        .item-queue {
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas" width="{{ config.SCREEN_WIDTH }}" height="{{ config.SCREEN_HEIGHT }}"></canvas>
+        
+        <div class="ui">
+            <div class="score-display">
+                <div>Score: <span id="score">0</span></div>
+                <div>Caught: <span id="caught">0</span></div>
+                <div>Missed: <span id="missed">0</span></div>
+                <div>Time: <span id="timer">2:00</span></div>
+            </div>
+            <div class="item-queue">
+                <div>Next Items:</div>
+                <div id="itemQueue"></div>
+            </div>
+        </div>
+
+        <div id="gameOver" class="game-over">
+            <h2 id="gameOverTitle">Game Over!</h2>
+            <p id="gameOverMessage"></p>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <p>Items Caught: <span id="finalCaught">0</span></p>
+            <div id="answerReveal" style="display: none;">
+                <h3>🎉 First Part of Answer Revealed!</h3>
+                <p style="font-size: 1.5em; color: #4CAF50; font-weight: bold;">aCM_iS_</p>
+                <button class="home-button" onclick="proceedToPuzzle()">🧩 Continue to Puzzle Game</button>
+            </div>
+            <div id="gameOverButtons">
+                <a href="/" class="home-button">🏠 Back to Home</a>
+                <button class="home-button" onclick="restartGame()">🔄 Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game configuration from Flask
+        const GAME_CONFIG = {{ config | tojson }};
+        
+        // Canvas and context
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Game variables
+        let gameSession = null;
+        let gameRunning = false;
+        let gameStartTime = 0;
+        let score = 0;
+        let itemsCaught = 0;
+        let itemsMissed = 0;
+        
+        // Game objects
+        let basket = {
+            x: GAME_CONFIG.SCREEN_WIDTH / 2 - 40,
+            y: GAME_CONFIG.SCREEN_HEIGHT - 70,
+            width: 80,
+            height: 60,
+            image: new Image()
+        };
+        
+        let fallingItems = [];
+        let itemImages = {};
+        let backgroundImage = new Image();
+        
+        // Item spawn control
+        let currentItemIndex = 0;
+        let currentItemCount = 0;
+        let spawnTimer = 0;
+        let spawnDelay = 60;
+        
+        // Load images
+        function loadImages() {
+            basket.image.src = '/static/basket.png';
+            backgroundImage.src = '/static/background_image.webp';
+            
+            // Load item images
+            GAME_CONFIG.items_to_spawn.forEach(item => {
+                itemImages[item.filename] = new Image();
+                itemImages[item.filename].src = '/static/' + item.filename;
+            });
+        }
+        
+        // Initialize game
+        async function initGame() {
+            try {
+                const response = await fetch('/api/start_game', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                gameSession = data.session_id;
+                gameRunning = true;
+                gameStartTime = Date.now();
+                
+                resetGameState();
+                updateItemQueue();
+                gameLoop();
+                
+            } catch (error) {
+                console.error('Failed to start game:', error);
+            }
+        }
+        
+        function resetGameState() {
+            score = 0;
+            itemsCaught = 0;
+            itemsMissed = 0;
+            fallingItems = [];
+            currentItemIndex = 0;
+            currentItemCount = 0;
+            spawnTimer = 0;
+            
+            document.getElementById('gameOver').style.display = 'none';
+        }
+        
+        // Mouse movement
+        canvas.addEventListener('mousemove', (e) => {
+            if (!gameRunning) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            
+            basket.x = mouseX - basket.width / 2;
+            
+            // Keep basket on screen
+            if (basket.x < 0) basket.x = 0;
+            if (basket.x > GAME_CONFIG.SCREEN_WIDTH - basket.width) {
+                basket.x = GAME_CONFIG.SCREEN_WIDTH - basket.width;
+            }
+        });
+        
+        // Spawn falling items
+        function spawnItem() {
+            if (currentItemIndex >= GAME_CONFIG.items_to_spawn.length) return;
+            
+            const itemConfig = GAME_CONFIG.items_to_spawn[currentItemIndex];
+            
+            if (currentItemCount < itemConfig.count) {
+                const item = {
+                    x: Math.random() * (GAME_CONFIG.SCREEN_WIDTH - 50),
+                    y: -50,
+                    width: 50,
+                    height: 50,
+                    speed: itemConfig.filename === 'persons_face.png' ? 
+                           2 + Math.random() : 
+                           (Math.random() < 0.3 ? 9 + Math.random() * 2 : 5 + Math.random()),
+                    points: itemConfig.points,
+                    filename: itemConfig.filename,
+                    isFinalItem: itemConfig.filename === 'persons_face.png'
+                };
+                
+                fallingItems.push(item);
+                currentItemCount++;
+                
+                spawnDelay = Math.max(20, 60 - (currentItemIndex * 10));
+            } else {
+                currentItemIndex++;
+                currentItemCount = 0;
+                updateItemQueue();
+            }
+        }
+        
+        // Update item queue display
+        function updateItemQueue() {
+            const queueElement = document.getElementById('itemQueue');
+            let queueHTML = '';
+            
+            for (let i = currentItemIndex; i < GAME_CONFIG.items_to_spawn.length; i++) {
+                const item = GAME_CONFIG.items_to_spawn[i];
+                const remaining = i === currentItemIndex ? 
+                                item.count - currentItemCount : 
+                                item.count;
+                queueHTML += `<div>${item.filename.split('.')[0]}: ${remaining}</div>`;
+            }
+            
+            queueElement.innerHTML = queueHTML;
+        }
+        
+        // Check collisions
+        function checkCollisions() {
+            for (let i = fallingItems.length - 1; i >= 0; i--) {
+                const item = fallingItems[i];
+                
+                // Check collision with basket
+                if (item.x < basket.x + basket.width &&
+                    item.x + item.width > basket.x &&
+                    item.y < basket.y + basket.height &&
+                    item.y + item.height > basket.y) {
+                    
+                    // Item caught
+                    catchItem(item);
+                    fallingItems.splice(i, 1);
+                    continue;
+                }
+                
+                // Check if item is off screen
+                if (item.y > GAME_CONFIG.SCREEN_HEIGHT) {
+                    missItem();
+                    fallingItems.splice(i, 1);
+                }
+            }
+        }
+        
+        // Item caught
+        async function catchItem(item) {
+            score += item.points;
+            itemsCaught++;
+            
+            try {
+                await fetch('/api/update_score', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: gameSession,
+                        points: item.points
+                    })
+                });
+            } catch (error) {
+                console.error('Failed to update score:', error);
+            }
+            
+            // Check if final item (person's face) was caught
+            if (item.isFinalItem) {
+                endGame(true);
+            }
+        }
+        
+        // Item missed
+        async function missItem() {
+            itemsMissed++;
+            
+            try {
+                await fetch('/api/miss_item', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: gameSession
+                    })
+                });
+            } catch (error) {
+                console.error('Failed to record miss:', error);
+            }
+            
+            // Check if too many items missed
+            if (itemsMissed >= 2) {
+                endGame(false, true); // End game with miss flag
+            }
+        }
+        
+        // End game
+        async function endGame(won = false, tooManyMisses = false) {
+            gameRunning = false;
+            
+            try {
+                const response = await fetch('/api/end_game', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        session_id: gameSession,
+                        won: won,
+                        missed_final_item: tooManyMisses
+                    })
+                });
+                
+                const data = await response.json();
+                showGameOver(won, data, tooManyMisses);
+                
+            } catch (error) {
+                console.error('Failed to end game:', error);
+                showGameOver(won, { final_score: score, items_caught: itemsCaught }, tooManyMisses);
+            }
+        }
+        
+        // Show game over screen
+        function showGameOver(won, data, tooManyMisses = false) {
+            const gameOverElement = document.getElementById('gameOver');
+            const titleElement = document.getElementById('gameOverTitle');
+            const messageElement = document.getElementById('gameOverMessage');
+            const answerReveal = document.getElementById('answerReveal');
+            const gameOverButtons = document.getElementById('gameOverButtons');
+            
+            if (won) {
+                titleElement.textContent = '🎉 Congratulations! First Round Complete! 🎉';
+                messageElement.textContent = 'You caught the person\'s face! Amazing reflexes!';
+                titleElement.style.color = '#4CAF50';
+                answerReveal.style.display = 'block';
+                gameOverButtons.style.display = 'none';
+            } else if (tooManyMisses) {
+                titleElement.textContent = '😞 Game Over - Too Many Misses!';
+                messageElement.textContent = 'You missed 2 items! Try again and be more careful with your catches.';
+                titleElement.style.color = '#F44336';
+                answerReveal.style.display = 'none';
+                gameOverButtons.style.display = 'block';
+            } else {
+                titleElement.textContent = '⏰ Time\'s Up!';
+                messageElement.textContent = 'Better luck next time! Keep practicing your catching skills.';
+                titleElement.style.color = '#F44336';
+                answerReveal.style.display = 'none';
+                gameOverButtons.style.display = 'block';
+            }
+            
+            document.getElementById('finalScore').textContent = data.final_score || score;
+            document.getElementById('finalCaught').textContent = data.items_caught || itemsCaught;
+            
+            gameOverElement.style.display = 'block';
+        }
+        
+        // Proceed to puzzle game
+        function proceedToPuzzle() {
+            window.location.href = '/puzzle?session=' + gameSession;
+        }
+        
+        // Update timer
+        function updateTimer() {
+            if (!gameRunning) return;
+            
+            const elapsed = (Date.now() - gameStartTime) / 1000;
+            const remaining = Math.max(0, GAME_CONFIG.TIME_LIMIT - elapsed);
+            
+            const minutes = Math.floor(remaining / 60);
+            const seconds = Math.floor(remaining % 60);
+            
+            document.getElementById('timer').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (remaining <= 0) {
+                endGame(false);
+            }
+        }
+        
+        // Update UI
+        function updateUI() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('caught').textContent = itemsCaught;
+            document.getElementById('missed').textContent = itemsMissed;
+            updateTimer();
+        }
+        
+        // Render game
+        function render() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background (blurred effect with overlay)
+            ctx.globalAlpha = 0.7;
+            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+            ctx.globalAlpha = 1.0;
+            
+            // Add blur overlay
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw falling items
+            fallingItems.forEach(item => {
+                if (itemImages[item.filename] && itemImages[item.filename].complete) {
+                    ctx.drawImage(itemImages[item.filename], item.x, item.y, item.width, item.height);
+                }
+            });
+            
+            // Draw basket
+            if (basket.image.complete) {
+                ctx.drawImage(basket.image, basket.x, basket.y, basket.width, basket.height);
+            }
+        }
+        
+        // Game loop
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            // Spawn items
+            spawnTimer++;
+            if (spawnTimer >= spawnDelay) {
+                spawnItem();
+                spawnTimer = 0;
+            }
+            
+            // Update falling items
+            fallingItems.forEach(item => {
+                item.y += item.speed;
+            });
+            
+            // Check collisions
+            checkCollisions();
+            
+            // Update UI
+            updateUI();
+            
+            // Render
+            render();
+            
+            // Continue game loop
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Restart game
+        function restartGame() {
+            initGame();
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            loadImages();
+            
+            // Wait for images to load before starting
+            let imagesLoaded = 0;
+            const totalImages = Object.keys(itemImages).length + 2; // +2 for basket and background
+            
+            function checkImagesLoaded() {
+                imagesLoaded++;
+                if (imagesLoaded >= totalImages) {
+                    initGame();
+                }
+            }
+            
+            basket.image.onload = checkImagesLoaded;
+            backgroundImage.onload = checkImagesLoaded;
+            
+            Object.values(itemImages).forEach(img => {
+                img.onload = checkImagesLoaded;
+            });
+        });
+    </script>
+</body>
+</html>

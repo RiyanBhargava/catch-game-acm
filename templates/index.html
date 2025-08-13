@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACM Catch Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            color: white;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 2px 2px 4px rgba(0,0,0,0.3), 0 0 10px rgba(255,255,255,0.2); }
+            to { text-shadow: 2px 2px 4px rgba(0,0,0,0.3), 0 0 20px rgba(255,255,255,0.4); }
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .game-description {
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+            line-height: 1.6;
+            background: rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .start-button {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            border: none;
+            color: white;
+            padding: 1rem 3rem;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .start-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .instructions {
+            margin-top: 2rem;
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+            background-image: url('/static/acm.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 10px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo"></div>
+        <h1>ACM Catch Game</h1>
+        <p class="subtitle">Test Your Reflexes & Catch Skills!</p>
+        
+        <div class="game-description">
+            <h3>🎯 ACM Two-Game Challenge:</h3>
+            
+            <h4>🎮 Game 1: Catch Challenge</h4>
+            <p>Test your reflexes by catching falling food items with your basket!</p>
+            <ul style="text-align: left; display: inline-block;">
+                <li>🍫 Chocolates: 2 points each (15 items)</li>
+                <li>🍟 Chips: 3 points each (10 items)</li>
+                <li>🍩 Donuts: 4 points each (8 items)</li>
+                <li>🍕 Pizza: 5 points each (4 items)</li>
+                <li>👤 Person's Face: 10 points (1 item - <strong>must catch to win!</strong>)</li>
+            </ul>
+            <p><strong>🎯 Objective:</strong> Catch the person's face to reveal the first part of the secret answer!</p>
+            <p><strong>⚠️ Warning:</strong> If you miss 2 or more items, the game ends - be careful!</p>
+            <p><strong>⏰ Time Limit:</strong> 2 minutes</p>
+            
+            <h4>🧩 Game 2: ACM Logo Puzzle</h4>
+            <p>After completing Game 1, solve the slide puzzle to reconstruct the ACM logo!</p>
+            <ul style="text-align: left; display: inline-block;">
+                <li>🔄 Click tiles adjacent to the empty space to move them</li>
+                <li>🖼️ Rearrange pieces to form the complete ACM logo</li>
+                <li>🧠 Use visual recognition - no numbers to guide you!</li>
+            </ul>
+            <p><strong>🎯 Objective:</strong> Complete the logo to reveal the second part of the answer!</p>
+            
+            <p style="margin-top: 1.5rem;"><strong>🏆 Complete Challenge:</strong> Finish both games to discover the full secret message!</p>
+        </div>
+
+        <a href="/game" class="start-button">🎮 Start Game 1</a>
+        <a href="/puzzle" class="start-button" style="background: linear-gradient(45deg, #667eea, #764ba2); margin-left: 1rem;">🧩 Start Game 2</a>
+        
+        <div class="instructions">
+            <p>Use your mouse to move the basket in Game 1, then solve the puzzle in Game 2!</p>
+            <p><em>Complete both games to unlock the secret ACM message!</em></p>
+        </div>
+    </div>
+</body>
+</html>
