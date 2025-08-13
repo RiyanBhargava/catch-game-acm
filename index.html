@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACM Challenge - Two Part Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 40px 0;
+        }
+
+        .title {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.5rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .game-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .game-section:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .game-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #4ecdc4;
+            text-align: center;
+        }
+
+        .game-description {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .feature {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #ff6b6b;
+        }
+
+        .feature-text {
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .play-button {
+            display: inline-block;
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            text-decoration: none;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .play-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            background: linear-gradient(45deg, #44a08d, #4ecdc4);
+        }
+
+        .instructions {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 40px 0;
+        }
+
+        .instructions h3 {
+            color: #ffd93d;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .instructions ol {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            padding-left: 30px;
+        }
+
+        .instructions li {
+            margin-bottom: 10px;
+        }
+
+        .requirements {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #4ecdc4;
+        }
+
+        .code {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            display: inline-block;
+            margin: 5px 0;
+        }
+
+        .answer-hint {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 40px 0;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .answer-hint h3 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            opacity: 0.7;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            margin-top: 60px;
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2.5rem;
+            }
+            
+            .game-section {
+                padding: 20px;
+            }
+            
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .game-canvas {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            margin: 20px auto;
+            display: block;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🎮 ACM Challenge</h1>
+            <p class="subtitle">A Two-Part Interactive Game to Reveal the Secret ACM Message</p>
+        </div>
+
+        <div class="game-section">
+            <h2 class="game-title">🎯 Part 1: Catch Game</h2>
+            <p class="game-description">
+                Test your reflexes and precision! Catch falling items with your mouse-controlled basket. 
+                You must catch ALL items without missing a single one to advance to the second part.
+            </p>
+            
+            <div style="text-align: center;">
+                <div class="requirements">
+                    <strong>Items to Catch:</strong><br>
+                    🍫 15 Chocolates • 🍟 10 Chips • 🍩 8 Donuts • 🍕 4 Pizza • 👤 1 Person's Face
+                </div>
+            </div>
+        </div>
+
+        <div class="game-section">
+            <h2 class="game-title">🧩 Part 2: Slide Puzzle</h2>
+            <p class="game-description">
+                Solve the slide puzzle by rearranging the ACM logo tiles. Click on tiles adjacent to the empty space to move them. 
+                Arrange all tiles in the correct order to reveal the complete ACM logo and the final answer.
+            </p>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <h3 class="feature-title">High Speed Challenge</h3>
+                <p class="feature-text">Items fall at different speeds - some at normal pace, others much faster to test your reflexes!</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🎯</div>
+                <h3 class="feature-title">Perfect Precision</h3>
+                <p class="feature-text">Miss even one item and you lose! Complete precision is required to unlock the secret.</p>
+            </div>
+            
+            <div class="feature">
+                <div class="feature-icon">🧠</div>
+                <h3 class="feature-title">Brain Teaser</h3>
+                <p class="feature-text">Solve the sliding puzzle using logic and strategy to arrange the ACM logo correctly.</p>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 50px 0;">
+            <div id="gameContainer" style="display: none;">
+                <canvas id="gameCanvas" class="game-canvas" width="1000" height="700">
+                    Your browser doesn't support HTML5 canvas.
+                </canvas>
+                <div style="margin-top: 20px;">
+                    <button onclick="restartGame()" class="play-button" style="font-size: 1rem; padding: 10px 20px;">🔄 Restart Game</button>
+                </div>
+            </div>
+            
+            <div id="startButton">
+                <button onclick="startGame()" class="play-button">🎮 Start ACM Challenge</button>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>🎯 How to Play</h3>
+            <ol>
+                <li><strong>Part 1:</strong> Move your mouse to control the basket</li>
+                <li>Catch all falling items - don't miss any!</li>
+                <li>Watch out for the person's face - it appears last and moves slowly</li>
+                <li><strong>Part 2:</strong> Click on tiles next to the empty space to move them</li>
+                <li>Arrange tiles to form the complete ACM logo</li>
+                <li>Complete both parts to reveal the secret message!</li>
+            </ol>
+        </div>
+
+        <div class="answer-hint">
+            <h3>🔐 Secret Mission</h3>
+            <p>Complete both challenges to discover the hidden ACM message!</p>
+            <p><strong>Hint:</strong> The answer has two parts, one from each game...</p>
+        </div>
+
+        <div class="requirements">
+            <h3>📋 For Local Installation:</h3>
+            <p>If you want to run this game locally on your computer:</p>
+            <div class="code">pip install pygame Pillow</div>
+            <p>Then run: <span class="code">python main_game.py</span></p>
+            <p><strong>Download:</strong> <a href="https://github.com/RiyanBhargava/catch-game-acm" style="color: #4ecdc4;">GitHub Repository</a></p>
+        </div>
+
+        <div class="footer">
+            <p>🎮 ACM Challenge Game | Created for the ACM Community | 2025</p>
+            <p>Test your skills and discover the secret message!</p>
+        </div>
+    </div>
+
+    <script>
+        function startGame() {
+            document.getElementById('startButton').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'block';
+            
+            // Initialize the game
+            initializeWebGame();
+        }
+
+        function restartGame() {
+            // Restart the game
+            initializeWebGame();
+        }
+
+        function initializeWebGame() {
+            // This will be where the pygame web game loads
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Draw a loading message
+            ctx.fillStyle = '#667eea';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = '48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('🎮 ACM Challenge Game', canvas.width/2, canvas.height/2 - 50);
+            
+            ctx.font = '24px Arial';
+            ctx.fillText('Loading...', canvas.width/2, canvas.height/2 + 20);
+            
+            ctx.font = '18px Arial';
+            ctx.fillText('For the full interactive experience, please download and run locally', canvas.width/2, canvas.height/2 + 80);
+            ctx.fillText('or visit our Replit version!', canvas.width/2, canvas.height/2 + 110);
+            
+            // Note: The actual pygame web conversion would load here
+            // For now, this shows a placeholder
+        }
+
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add smooth scrolling
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
