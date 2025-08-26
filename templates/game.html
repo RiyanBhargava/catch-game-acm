@@ -23,10 +23,176 @@
             align-items: center;
         }
 
+        .background-decorations {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .deco-image {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 10px;
+            opacity: 0.7;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .deco-image:nth-child(even) {
+            animation-delay: 1.5s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Position decorative images in corners and sides */
+        .deco-top-left {
+            top: 20px;
+            left: 20px;
+        }
+
+        .deco-top-right {
+            top: 20px;
+            right: 20px;
+        }
+
+        .deco-bottom-left {
+            bottom: 20px;
+            left: 20px;
+        }
+
+        .deco-bottom-right {
+            bottom: 20px;
+            right: 20px;
+        }
+
+        .deco-left-middle {
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+        }
+
+        .deco-right-middle {
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+        }
+
+        .deco-top-middle {
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .deco-bottom-middle {
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Additional positions for more coverage */
+        .deco-top-left2 {
+            top: 120px;
+            left: 20px;
+        }
+
+        .deco-top-right2 {
+            top: 120px;
+            right: 20px;
+        }
+
+        .deco-bottom-left2 {
+            bottom: 120px;
+            left: 20px;
+        }
+
+        .deco-bottom-right2 {
+            bottom: 120px;
+            right: 20px;
+        }
+
+        .deco-left-top {
+            top: 25%;
+            left: 20px;
+        }
+
+        .deco-left-bottom {
+            top: 75%;
+            left: 20px;
+        }
+
+        .deco-right-top {
+            top: 25%;
+            right: 20px;
+        }
+
+        .deco-right-bottom {
+            top: 75%;
+            right: 20px;
+        }
+
+        .deco-top-left3 {
+            top: 20px;
+            left: 150px;
+        }
+
+        .deco-top-right3 {
+            top: 20px;
+            right: 150px;
+        }
+
+        .deco-bottom-left3 {
+            bottom: 20px;
+            left: 150px;
+        }
+
+        .deco-bottom-right3 {
+            bottom: 20px;
+            right: 150px;
+        }
+
+        /* DOUBLING - Layer 5: Far edges */
+        .deco-far-left-1 { top: 15%; left: 130px; }
+        .deco-far-left-2 { top: 35%; left: 130px; }
+        .deco-far-left-3 { top: 65%; left: 130px; }
+        .deco-far-left-4 { top: 85%; left: 130px; }
+        
+        .deco-far-right-1 { top: 15%; right: 130px; }
+        .deco-far-right-2 { top: 35%; right: 130px; }
+        .deco-far-right-3 { top: 65%; right: 130px; }
+        .deco-far-right-4 { top: 85%; right: 130px; }
+
+        /* DOUBLING - Layer 6: Top/bottom extended */
+        .deco-top-ext-1 { top: 80px; left: 25%; }
+        .deco-top-ext-2 { top: 80px; left: 75%; }
+        .deco-bottom-ext-1 { bottom: 80px; left: 25%; }
+        .deco-bottom-ext-2 { bottom: 80px; left: 75%; }
+
+        /* DOUBLING - Layer 7: Inner positions */
+        .deco-inner-1 { top: 30%; left: 200px; }
+        .deco-inner-2 { top: 70%; left: 200px; }
+        .deco-inner-3 { top: 30%; right: 200px; }
+        .deco-inner-4 { top: 70%; right: 200px; }
+
+        /* DOUBLING - Layer 8: Ultra corners */
+        .deco-ultra-tl { top: 60px; left: 80px; }
+        .deco-ultra-tr { top: 60px; right: 80px; }
+        .deco-ultra-bl { bottom: 60px; left: 80px; }
+        .deco-ultra-br { bottom: 60px; right: 80px; }
+
         #gameCanvas {
             border: 2px solid #fff;
             background: url('/static/background_image.webp') center/cover;
             cursor: none;
+            position: relative;
+            z-index: 10;
         }
 
         .ui {
@@ -82,6 +248,67 @@
 </head>
 <body>
     <div class="game-container">
+        <!-- Background decorative food images -->
+        <div class="background-decorations">
+            <!-- Original 8 positions -->
+            <img src="/static/chips.jpg" alt="Chips" class="deco-image deco-top-left">
+            <img src="/static/chocolates.jpg" alt="Chocolates" class="deco-image deco-top-right">
+            <img src="/static/donuts.jpg" alt="Donuts" class="deco-image deco-bottom-left">
+            <img src="/static/pizza.jpg" alt="Pizza" class="deco-image deco-bottom-right">
+            <img src="/static/chips.jpg" alt="Chips" class="deco-image deco-left-middle">
+            <img src="/static/chocolates.jpg" alt="Chocolates" class="deco-image deco-right-middle">
+            <img src="/static/donuts.jpg" alt="Donuts" class="deco-image deco-top-middle">
+            <img src="/static/pizza.jpg" alt="Pizza" class="deco-image deco-bottom-middle">
+            
+            <!-- Additional layer 1 - Second row/column -->
+            <img src="/static/pizza.jpg" alt="Pizza" class="deco-image deco-top-left2">
+            <img src="/static/donuts.jpg" alt="Donuts" class="deco-image deco-top-right2">
+            <img src="/static/chocolates.jpg" alt="Chocolates" class="deco-image deco-bottom-left2">
+            <img src="/static/chips.jpg" alt="Chips" class="deco-image deco-bottom-right2">
+            
+            <!-- Additional layer 2 - Quarter positions -->
+            <img src="/static/donuts.jpg" alt="Donuts" class="deco-image deco-left-top">
+            <img src="/static/pizza.jpg" alt="Pizza" class="deco-image deco-left-bottom">
+            <img src="/static/chips.jpg" alt="Chips" class="deco-image deco-right-top">
+            <img src="/static/chocolates.jpg" alt="Chocolates" class="deco-image deco-right-bottom">
+            
+            <!-- Additional layer 3 - Extended corners -->
+            <img src="/static/chocolates.jpg" alt="Chocolates" class="deco-image deco-top-left3">
+            <img src="/static/pizza.jpg" alt="Pizza" class="deco-image deco-top-right3">
+            <img src="/static/chips.jpg" alt="Chips" class="deco-image deco-bottom-left3">
+            <img src="/static/donuts.jpg" alt="Donuts" class="deco-image deco-bottom-right3">
+            
+            <!-- DOUBLING - Layer 5: Far left edges (4 images) -->
+            <img src="/static/chips.jpg" alt="Chips" class="deco-image deco-far-left-1">
+            <img src="/static/pizza.jpg" alt="Pizza" class="deco-image deco-far-left-2">
+            <img src="/static/donuts.jpg" alt="Donuts" class="deco-image deco-far-left-3">
+            <img src="/static/chocolates.jpg" alt="Chocolates" class="deco-image deco-far-left-4">
+            
+            <!-- DOUBLING - Layer 5: Far right edges (4 images) -->
+            <img src="/static/chocolates.jpg" alt="Chocolates" class="deco-image deco-far-right-1">
+            <img src="/static/donuts.jpg" alt="Donuts" class="deco-image deco-far-right-2">
+            <img src="/static/pizza.jpg" alt="Pizza" class="deco-image deco-far-right-3">
+            <img src="/static/chips.jpg" alt="Chips" class="deco-image deco-far-right-4">
+            
+            <!-- DOUBLING - Layer 6: Top/bottom extended (4 images) -->
+            <img src="/static/pizza.jpg" alt="Pizza" class="deco-image deco-top-ext-1">
+            <img src="/static/chips.jpg" alt="Chips" class="deco-image deco-top-ext-2">
+            <img src="/static/donuts.jpg" alt="Donuts" class="deco-image deco-bottom-ext-1">
+            <img src="/static/chocolates.jpg" alt="Chocolates" class="deco-image deco-bottom-ext-2">
+            
+            <!-- DOUBLING - Layer 7: Inner positions (4 images) -->
+            <img src="/static/donuts.jpg" alt="Donuts" class="deco-image deco-inner-1">
+            <img src="/static/chocolates.jpg" alt="Chocolates" class="deco-image deco-inner-2">
+            <img src="/static/chips.jpg" alt="Chips" class="deco-image deco-inner-3">
+            <img src="/static/pizza.jpg" alt="Pizza" class="deco-image deco-inner-4">
+            
+            <!-- DOUBLING - Layer 8: Ultra corners (4 images) -->
+            <img src="/static/chocolates.jpg" alt="Chocolates" class="deco-image deco-ultra-tl">
+            <img src="/static/donuts.jpg" alt="Donuts" class="deco-image deco-ultra-tr">
+            <img src="/static/pizza.jpg" alt="Pizza" class="deco-image deco-ultra-bl">
+            <img src="/static/chips.jpg" alt="Chips" class="deco-image deco-ultra-br">
+        </div>
+        
         <canvas id="gameCanvas" width="{{ config.SCREEN_WIDTH }}" height="{{ config.SCREEN_HEIGHT }}"></canvas>
         
         <div class="ui">
@@ -226,8 +453,8 @@
                     width: 50,
                     height: 50,
                     speed: itemConfig.filename === 'persons_face.png' ? 
-                           2 + Math.random() : 
-                           (Math.random() < 0.3 ? 9 + Math.random() * 2 : 5 + Math.random()),
+                           1.5 + Math.random() * 0.5 : 
+                           (Math.random() < 0.3 ? 4 + Math.random() : 2.5 + Math.random() * 0.5),
                     points: itemConfig.points,
                     filename: itemConfig.filename,
                     isFinalItem: itemConfig.filename === 'persons_face.png'
